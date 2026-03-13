@@ -1,0 +1,5 @@
+{
+  "name": "ShareitAF",
+  "description": "A minimal, fast, and secure file sharing platform. Share files instantly with password protection and no login required.",
+  "requestFramePermissions": []
+}

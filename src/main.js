@@ -189,5 +189,25 @@ confirmDownloadBtn.addEventListener('click', async () => {
     }
 });
 
+// Toggle password visibility
+document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const eyeIcon = button.querySelector('.eye-icon');
+        const eyeSlashIcon = button.querySelector('.eye-slash-icon');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeIcon.classList.add('hidden');
+            eyeSlashIcon.classList.remove('hidden');
+        } else {
+            input.type = 'password';
+            eyeIcon.classList.remove('hidden');
+            eyeSlashIcon.classList.add('hidden');
+        }
+    });
+});
+
 // Initial load
 loadFiles();

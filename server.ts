@@ -3,7 +3,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcrypt';
-import Database from 'better-sqlite3';
+import 'dotenv/config';
+import mongoose from 'mongoose';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
@@ -16,19 +17,21 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 }
 
 // Database setup
-const db = new Database('shareitaf.db');
-db.exec(`
-  CREATE TABLE IF NOT EXISTS files (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    filename TEXT NOT NULL,
-    original_name TEXT NOT NULL,
-    uploader_name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    file_type TEXT NOT NULL,
-    file_size INTEGER NOT NULL,
-    upload_time DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shareitaf')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+const fileSchema = new mongoose.Schema({
+  filename: { type: String, required: true },
+  original_name: { type: String, required: true },
+  uploader_name: { type: String, required: true },
+  password_hash: { type: String, required: true },
+  file_type: { type: String, required: true },
+  file_size: { type: Number, required: true },
+  upload_time: { type: Date, default: Date.now }
+});
+
+const FileModel = mongoose.model('File', fileSchema);
 
 // Multer configuration
 const storage = multer.diskStorage({
@@ -69,12 +72,16 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const stmt = db.prepare(`
-      INSERT INTO files (filename, original_name, uploader_name, password_hash, file_type, file_size)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    const newFile = new FileModel({
+      filename: file.filename,
+      original_name: file.originalname,
+      uploader_name: uploaderName,
+      password_hash: passwordHash,
+      file_type: file.mimetype,
+      file_size: file.size
+    });
 
-    stmt.run(file.filename, file.originalname, uploaderName, passwordHash, file.mimetype, file.size);
+    await newFile.save();
 
     res.json({ success: true, message: 'File uploaded successfully!' });
   } catch (error: any) {
@@ -82,10 +89,15 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-app.get('/api/files', (req, res) => {
+app.get('/api/files', async (req, res) => {
   try {
-    const files = db.prepare('SELECT id, original_name, uploader_name, file_type, file_size, upload_time FROM files ORDER BY upload_time DESC').all();
-    res.json(files);
+    const files = await FileModel.find()
+      .sort({ upload_time: -1 })
+      .select('original_name uploader_name file_type file_size upload_time')
+      .lean();
+    
+    const mappedFiles = files.map(f => ({ ...f, id: f._id }));
+    res.json(mappedFiles);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -96,7 +108,12 @@ app.post('/api/download/:id', async (req, res) => {
     const { id } = req.params;
     const { password } = req.body;
 
-    const fileRecord = db.prepare('SELECT * FROM files WHERE id = ?').get(id) as any;
+    let fileRecord;
+    try {
+      fileRecord = await FileModel.findById(id).lean() as any;
+    } catch (e) {
+      return res.status(404).json({ error: 'Invalid file ID format' });
+    }
 
     if (!fileRecord) {
       return res.status(404).json({ error: 'File not found' });

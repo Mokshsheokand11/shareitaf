@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,16 +12,19 @@
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
         }
+
         .upload-area:hover {
             border-color: #3b82f6;
             background: rgba(59, 130, 246, 0.03);
         }
+
         .file-icon {
             width: 48px;
             height: 48px;
@@ -30,9 +34,11 @@
             border-radius: 12px;
             transition: transform 0.2s;
         }
+
         .file-row:hover .file-icon {
             transform: scale(1.05);
         }
+
         .loader {
             border: 2px solid #f3f3f3;
             border-top: 2px solid #ffffff;
@@ -41,46 +47,67 @@
             height: 18px;
             animation: spin 0.8s linear infinite;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
+
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .btn-primary:hover {
             transform: translateY(-1px);
             box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
     </style>
 </head>
+
 <body class="min-h-screen text-slate-900 selection:bg-blue-100">
     <div class="max-w-4xl mx-auto px-4 py-16">
         <!-- Header -->
         <header class="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
             <div class="inline-block p-3 rounded-2xl bg-blue-600 text-white mb-6 shadow-xl shadow-blue-200">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2">
+                    </path>
+                </svg>
             </div>
             <h1 class="text-6xl font-black tracking-tight mb-3 text-slate-900">
                 Shareit<span class="text-blue-600">AF</span>
             </h1>
-            <p class="text-slate-500 text-xl font-medium">Share files instantly — no login required.</p>
+            <p class="text-slate-500 text-xl font-medium">Share files instantly — As Fast.</p>
         </header>
 
         <!-- Upload Section -->
-        <div class="glass-card rounded-[2.5rem] p-10 mb-16 max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+        <div
+            class="glass-card rounded-[2.5rem] p-10 mb-16 max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
             <form id="uploadForm" class="space-y-8">
                 <div class="space-y-3">
                     <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider">Choose File</label>
                     <div class="relative group">
                         <input type="file" id="fileInput" class="hidden" required>
-                        <label for="fileInput" class="upload-area flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer transition-all">
+                        <label for="fileInput"
+                            class="upload-area flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer transition-all">
                             <div class="flex flex-col items-center justify-center p-6 text-center">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-                                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                <div
+                                    class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4"></path>
+                                    </svg>
                                 </div>
-                                <p id="fileNameDisplay" class="text-slate-600 font-medium">Drop your file here or click to browse</p>
+                                <p id="fileNameDisplay" class="text-slate-600 font-medium">Drop your file here or click
+                                    to browse</p>
                                 <p class="text-xs text-slate-400 mt-2">PDF, PPT, DOC, JPG, PNG (Max 25MB)</p>
                             </div>
                         </label>
@@ -90,23 +117,45 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider">Your Name</label>
-                        <input type="text" id="uploaderName" placeholder="e.g. Alex" class="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-white/50" required>
+                        <input type="text" id="uploaderName" placeholder="e.g. Alex"
+                            class="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-white/50"
+                            required>
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider">Set Password</label>
+                        <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider">Set
+                            Password</label>
                         <div class="relative">
-                            <input type="password" id="password" placeholder="••••••••" class="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-white/50 pr-12" required>
-                            <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 toggle-password" data-target="password">
-                                <svg class="w-5 h-5 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                <svg class="w-5 h-5 eye-slash-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                            <input type="password" id="password" placeholder="••••••••"
+                                class="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-white/50 pr-12"
+                                required>
+                            <button type="button"
+                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 toggle-password"
+                                data-target="password">
+                                <svg class="w-5 h-5 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                    </path>
+                                </svg>
+                                <svg class="w-5 h-5 eye-slash-icon hidden" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21">
+                                    </path>
+                                </svg>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" id="uploadBtn" class="btn-primary w-full text-white font-bold py-5 rounded-2xl flex items-center justify-center space-x-3 text-lg">
+                <button type="submit" id="uploadBtn"
+                    class="btn-primary w-full text-white font-bold py-5 rounded-2xl flex items-center justify-center space-x-3 text-lg">
                     <span>Share File</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
                 </button>
             </form>
         </div>
@@ -115,9 +164,10 @@
         <div class="space-y-6">
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-bold text-slate-800">Shared Files</h2>
-                <span id="fileCount" class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-sm font-medium">0 files</span>
+                <span id="fileCount" class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-sm font-medium">0
+                    files</span>
             </div>
-            
+
             <div id="fileList" class="grid gap-4">
                 <!-- Files will be loaded here -->
                 <div class="text-center py-12 text-slate-400">Loading files...</div>
@@ -126,24 +176,42 @@
     </div>
 
     <!-- Password Modal -->
-    <div id="passwordModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div id="passwordModal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50">
         <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
             <h3 class="text-xl font-bold mb-4">Enter Password</h3>
             <p class="text-slate-500 mb-6">This file is protected. Please enter the password to download.</p>
             <div class="relative mb-6">
-                <input type="password" id="downloadPassword" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none pr-12" placeholder="Password">
-                <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 toggle-password" data-target="downloadPassword">
-                    <svg class="w-5 h-5 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    <svg class="w-5 h-5 eye-slash-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                <input type="password" id="downloadPassword"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none pr-12"
+                    placeholder="Password">
+                <button type="button"
+                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 toggle-password"
+                    data-target="downloadPassword">
+                    <svg class="w-5 h-5 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                        </path>
+                    </svg>
+                    <svg class="w-5 h-5 eye-slash-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21">
+                        </path>
+                    </svg>
                 </button>
             </div>
             <div class="flex space-x-3">
-                <button onclick="closeModal()" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 font-semibold hover:bg-slate-50">Cancel</button>
-                <button id="confirmDownloadBtn" class="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700">Download</button>
+                <button onclick="closeModal()"
+                    class="flex-1 px-4 py-3 rounded-xl border border-slate-200 font-semibold hover:bg-slate-50">Cancel</button>
+                <button id="confirmDownloadBtn"
+                    class="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700">Download</button>
             </div>
         </div>
     </div>
 
     <script src="/src/main.js"></script>
 </body>
+
 </html>

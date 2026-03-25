@@ -28,7 +28,9 @@ const fileSchema = new mongoose.Schema({
   password_hash: { type: String, required: true },
   file_type: { type: String, required: true },
   file_size: { type: Number, required: true },
-  upload_time: { type: Date, default: Date.now }
+  upload_time: { type: Date, default: Date.now },
+  one_time_open: { type: Boolean, default: false },
+  is_opened: { type: Boolean, default: false }
 });
 
 const FileModel = mongoose.model('File', fileSchema);
@@ -78,7 +80,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       uploader_name: uploaderName,
       password_hash: passwordHash,
       file_type: file.mimetype,
-      file_size: file.size
+      file_size: file.size,
+      one_time_open: req.body.oneTimeOpen === 'true'
     });
 
     await newFile.save();
@@ -93,7 +96,7 @@ app.get('/api/files', async (req, res) => {
   try {
     const files = await FileModel.find()
       .sort({ upload_time: -1 })
-      .select('original_name uploader_name file_type file_size upload_time')
+      .select('original_name uploader_name file_type file_size upload_time one_time_open is_opened')
       .lean();
     
     const mappedFiles = files.map(f => ({ ...f, id: f._id }));
@@ -123,6 +126,14 @@ app.post('/api/download/:id', async (req, res) => {
 
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Incorrect password' });
+    }
+
+    if (fileRecord.one_time_open && fileRecord.is_opened) {
+      return res.status(410).json({ error: 'This file is no longer available (One-time download only)' });
+    }
+
+    if (fileRecord.one_time_open) {
+      await FileModel.findByIdAndUpdate(id, { is_opened: true });
     }
 
     const filePath = path.join(UPLOADS_DIR, fileRecord.filename);

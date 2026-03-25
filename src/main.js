@@ -38,6 +38,7 @@ uploadForm.addEventListener('submit', async (e) => {
     formData.append('file', fileInput.files[0]);
     formData.append('uploaderName', document.getElementById('uploaderName').value);
     formData.append('password', document.getElementById('password').value);
+    formData.append('oneTimeOpen', document.getElementById('oneTimeOpen').checked);
 
     try {
         uploadBtn.disabled = true;
@@ -91,24 +92,37 @@ async function loadFiles() {
             const size = (file.file_size / (1024 * 1024)).toFixed(2);
             const icon = getFileIcon(file.file_type);
             const color = getIconColor(file.file_type);
+            
+            const isCorrupted = file.one_time_open && file.is_opened;
+            const oneTimeBadge = file.one_time_open ? `<span class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${isCorrupted ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}">One-Time</span>` : '';
 
             return `
-                <div class="file-row glass-card p-6 rounded-3xl flex items-center justify-between hover:shadow-lg hover:shadow-blue-500/5 transition-all animate-in fade-in slide-in-from-left-4 duration-500">
+                <div class="file-row glass-card p-6 rounded-3xl flex items-center justify-between hover:shadow-lg hover:shadow-blue-500/5 transition-all animate-in fade-in slide-in-from-left-4 duration-500 ${isCorrupted ? 'opacity-75 grayscale-[0.5]' : ''}">
                     <div class="flex items-center space-x-5">
-                        <div class="file-icon ${color} text-white shadow-lg shadow-current/20">
-                            ${icon}
+                        <div class="file-icon ${isCorrupted ? 'bg-slate-400' : color} text-white shadow-lg shadow-current/20">
+                            ${isCorrupted ? '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>' : icon}
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800 text-lg">${file.original_name}</h3>
+                            <div class="flex items-center space-x-2">
+                                <h3 class="font-bold text-slate-800 text-lg">${isCorrupted ? 'File Corrupted' : file.original_name}</h3>
+                                ${oneTimeBadge}
+                            </div>
                             <p class="text-sm text-slate-500">
-                                Uploaded by <span class="font-bold text-slate-700">${file.uploader_name}</span> • ${date} • ${size} MB
+                                ${isCorrupted ? 'This file has already been opened' : `Uploaded by <span class="font-bold text-slate-700">${file.uploader_name}</span> • ${date} • ${size} MB`}
                             </p>
                         </div>
                     </div>
-                    <button onclick="openDownloadModal(${file.id})" class="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-6 py-3 rounded-2xl font-bold transition-all flex items-center space-x-2">
-                        <span>Download</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    </button>
+                    ${isCorrupted ? `
+                        <div class="text-red-500 font-bold px-6 py-3 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                            <span>Expired</span>
+                        </div>
+                    ` : `
+                        <button onclick="openDownloadModal('${file.id}')" class="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-6 py-3 rounded-2xl font-bold transition-all flex items-center space-x-2">
+                            <span>Download</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </button>
+                    `}
                 </div>
             `;
         }).join('');
@@ -180,9 +194,16 @@ confirmDownloadBtn.addEventListener('click', async () => {
             window.URL.revokeObjectURL(url);
             a.remove();
             closeModal();
+            loadFiles(); // Refresh to show "Corrupted" state if it was a one-time file
         } else {
             const result = await response.json();
-            alert(result.error || 'Incorrect password.');
+            if (response.status === 410) {
+                alert('File Corrupted: ' + result.error);
+                closeModal();
+                loadFiles();
+            } else {
+                alert(result.error || 'Incorrect password.');
+            }
         }
     } catch (error) {
         alert('Download failed: ' + error.message);

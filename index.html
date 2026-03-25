@@ -149,6 +149,16 @@
                     </div>
                 </div>
 
+                <!-- One-time open toggle -->
+                <div class="flex items-center space-x-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                    <input type="checkbox" id="oneTimeOpen" 
+                        class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer">
+                    <label for="oneTimeOpen" class="cursor-pointer select-none">
+                        <span class="block text-sm font-bold text-slate-700">One-time open</span>
+                        <span class="block text-xs text-slate-500">File becomes "corrupted" after being opened once.</span>
+                    </label>
+                </div>
+
                 <button type="submit" id="uploadBtn"
                     class="btn-primary w-full text-white font-bold py-5 rounded-2xl flex items-center justify-center space-x-3 text-lg">
                     <span>Share File</span>

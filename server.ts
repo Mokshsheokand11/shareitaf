@@ -8,18 +8,28 @@ import mongoose from 'mongoose';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
-// Database setup
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shareitaf')
+// Database setup: Adding timeouts for more robust connection on unstable networks
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shareitaf', {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 10000,
+})
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error details:', err.message);
+    if (err.message.includes('ECONNREFUSED')) {
+        console.error('TIP: This often means DNS for SRV records is failing. Check your DNS or use a non-SRV connection string.');
+    }
+  });
 
 const fileSchema = new mongoose.Schema({
   filename: { type: String, required: true },
   original_name: { type: String, required: true },
   uploader_name: { type: String, required: true },
   password_hash: { type: String, required: true },
+  security_question: { type: String, required: true },
+  security_answer_hash: { type: String, required: true },
   file_type: { type: String, required: true },
   file_size: { type: Number, required: true },
   upload_time: { type: Date, default: Date.now },
@@ -52,14 +62,15 @@ app.use(express.json());
 // API Routes
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
-    const { uploaderName, password } = req.body;
+    const { uploaderName, password, securityQuestion, securityAnswer } = req.body;
     const file = req.file;
 
-    if (!file || !uploaderName || !password) {
+    if (!file || !uploaderName || !password || !securityQuestion || !securityAnswer) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const securityAnswerHash = await bcrypt.hash(securityAnswer.toLowerCase().trim(), 10);
     const uniqueFilename = Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
 
     const newFile = new FileModel({
@@ -67,6 +78,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       original_name: file.originalname,
       uploader_name: uploaderName,
       password_hash: passwordHash,
+      security_question: securityQuestion,
+      security_answer_hash: securityAnswerHash,
       file_type: file.mimetype,
       file_size: file.size,
       one_time_open: req.body.oneTimeOpen === 'true',
@@ -85,7 +98,7 @@ app.get('/api/files', async (req, res) => {
   try {
     const files = await FileModel.find()
       .sort({ upload_time: -1 })
-      .select('original_name uploader_name file_type file_size upload_time one_time_open is_opened')
+      .select('original_name uploader_name file_type file_size upload_time one_time_open is_opened security_question')
       .lean();
     
     const mappedFiles = files.map(f => ({ ...f, id: f._id }));
@@ -128,6 +141,36 @@ app.post('/api/download/:id', async (req, res) => {
     res.setHeader('Content-Type', fileRecord.file_type);
     res.setHeader('Content-Disposition', `attachment; filename="${fileRecord.original_name}"`);
     res.send(fileRecord.file_data);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { answer } = req.body;
+
+    if (!answer) {
+      return res.status(400).json({ error: 'Security answer is required to delete' });
+    }
+
+    const fileRecord = await FileModel.findById(id) as any;
+    if (!fileRecord) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    if (!fileRecord.security_answer_hash) {
+        return res.status(400).json({ error: 'This file cannot be deleted via security question (Legacy record)' });
+    }
+
+    const answerMatch = await bcrypt.compare(answer.toLowerCase().trim(), fileRecord.security_answer_hash);
+    if (!answerMatch) {
+      return res.status(401).json({ error: 'Incorrect security answer' });
+    }
+
+    await FileModel.findByIdAndDelete(id);
+    res.json({ success: true, message: 'File deleted successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -4,10 +4,13 @@ const fileNameDisplay = document.getElementById('fileNameDisplay');
 const fileList = document.getElementById('fileList');
 const fileCount = document.getElementById('fileCount');
 const passwordModal = document.getElementById('passwordModal');
-const downloadPassword = document.getElementById('downloadPassword');
-const confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
+const modalTitle = document.getElementById('modalTitle');
+const modalDescription = document.getElementById('modalDescription');
+const modalPasswordInput = document.getElementById('modalPasswordInput');
+const confirmActionBtn = document.getElementById('confirmActionBtn');
 
-let currentDownloadId = null;
+let currentFileId = null;
+let modalMode = 'download'; // 'download' or 'delete'
 
 // File input change handler
 fileInput.addEventListener('change', (e) => {
@@ -38,6 +41,8 @@ uploadForm.addEventListener('submit', async (e) => {
     formData.append('file', fileInput.files[0]);
     formData.append('uploaderName', document.getElementById('uploaderName').value);
     formData.append('password', document.getElementById('password').value);
+    formData.append('securityQuestion', document.getElementById('securityQuestion').value);
+    formData.append('securityAnswer', document.getElementById('securityAnswer').value);
     formData.append('oneTimeOpen', document.getElementById('oneTimeOpen').checked);
 
     try {
@@ -112,17 +117,22 @@ async function loadFiles() {
                             </p>
                         </div>
                     </div>
-                    ${isCorrupted ? `
-                        <div class="text-red-500 font-bold px-6 py-3 flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                            <span>Expired</span>
-                        </div>
-                    ` : `
-                        <button onclick="openDownloadModal('${file.id}')" class="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-6 py-3 rounded-2xl font-bold transition-all flex items-center space-x-2">
-                            <span>Download</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="openDeleteModal('${file.id}', '${file.security_question.replace(/'/g, "\\'")}')" class="p-3 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all group" title="Delete file">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
-                    `}
+                        ${isCorrupted ? `
+                            <div class="text-red-500 font-bold px-4 py-3 flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                <span class="text-sm">Expired</span>
+                            </div>
+                        ` : `
+                            <button onclick="openDownloadModal('${file.id}')" class="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-6 py-3 rounded-2xl font-bold transition-all flex items-center space-x-2">
+                                <span>Download</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </button>
+                        `}
+                    </div>
                 </div>
             `;
         }).join('');
@@ -148,28 +158,61 @@ function getIconColor(type) {
 }
 
 function openDownloadModal(id) {
-    currentDownloadId = id;
+    currentFileId = id;
+    modalMode = 'download';
+    modalTitle.textContent = 'Enter Password';
+    modalDescription.textContent = 'This file is protected. Please enter the password to download.';
+    confirmActionBtn.textContent = 'Download';
+    confirmActionBtn.className = 'flex-1 px-5 py-4 rounded-2xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200';
+    modalPasswordInput.type = 'password';
+    modalPasswordInput.placeholder = '••••••••';
+    
     passwordModal.classList.remove('hidden');
     passwordModal.classList.add('flex');
-    downloadPassword.value = '';
-    downloadPassword.focus();
+    modalPasswordInput.value = '';
+    modalPasswordInput.focus();
+}
+
+function openDeleteModal(id, question) {
+    currentFileId = id;
+    modalMode = 'delete';
+    modalTitle.textContent = 'Security Question';
+    modalDescription.textContent = question;
+    confirmActionBtn.textContent = 'Delete Permanently';
+    confirmActionBtn.className = 'flex-1 px-5 py-4 rounded-2xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200';
+    modalPasswordInput.type = 'text';
+    modalPasswordInput.placeholder = 'Your security answer';
+    
+    passwordModal.classList.remove('hidden');
+    passwordModal.classList.add('flex');
+    modalPasswordInput.value = '';
+    modalPasswordInput.focus();
 }
 
 function closeModal() {
     passwordModal.classList.add('hidden');
     passwordModal.classList.remove('flex');
-    currentDownloadId = null;
+    currentFileId = null;
+    modalMode = null;
 }
 
-confirmDownloadBtn.addEventListener('click', async () => {
-    const password = downloadPassword.value;
-    if (!password) {
-        alert('Please enter the password.');
+confirmActionBtn.addEventListener('click', async () => {
+    const value = modalPasswordInput.value;
+    if (!value) {
+        alert('Please enter the required information.');
         return;
     }
 
+    if (modalMode === 'download') {
+        await handleDownload(value);
+    } else {
+        await handleDelete(value);
+    }
+});
+
+async function handleDownload(password) {
     try {
-        const response = await fetch(`/api/download/${currentDownloadId}`, {
+        const response = await fetch(`/api/download/${currentFileId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password })
@@ -181,7 +224,6 @@ confirmDownloadBtn.addEventListener('click', async () => {
             const a = document.createElement('a');
             a.href = url;
             
-            // Get filename from content-disposition header if possible
             const contentDisposition = response.headers.get('content-disposition');
             let filename = 'download';
             if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
@@ -194,7 +236,7 @@ confirmDownloadBtn.addEventListener('click', async () => {
             window.URL.revokeObjectURL(url);
             a.remove();
             closeModal();
-            loadFiles(); // Refresh to show "Corrupted" state if it was a one-time file
+            loadFiles();
         } else {
             const result = await response.json();
             if (response.status === 410) {
@@ -208,7 +250,29 @@ confirmDownloadBtn.addEventListener('click', async () => {
     } catch (error) {
         alert('Download failed: ' + error.message);
     }
-});
+}
+
+async function handleDelete(answer) {
+    try {
+        const response = await fetch(`/api/delete/${currentFileId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answer })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert('Success: ' + result.message);
+            closeModal();
+            loadFiles();
+        } else {
+            const result = await response.json();
+            alert('Error: ' + (result.error || 'Failed to delete file.'));
+        }
+    } catch (error) {
+        alert('Deletion failed: ' + error.message);
+    }
+}
 
 // Toggle password visibility
 document.querySelectorAll('.toggle-password').forEach(button => {
@@ -218,14 +282,16 @@ document.querySelectorAll('.toggle-password').forEach(button => {
         const eyeIcon = button.querySelector('.eye-icon');
         const eyeSlashIcon = button.querySelector('.eye-slash-icon');
         
-        if (input.type === 'password') {
-            input.type = 'text';
-            eyeIcon.classList.add('hidden');
-            eyeSlashIcon.classList.remove('hidden');
-        } else {
-            input.type = 'password';
-            eyeIcon.classList.remove('hidden');
-            eyeSlashIcon.classList.add('hidden');
+        if (input.type === 'password' || input.type === 'text') {
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.classList.add('hidden');
+                eyeSlashIcon.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                eyeIcon.classList.remove('hidden');
+                eyeSlashIcon.classList.add('hidden');
+            }
         }
     });
 });

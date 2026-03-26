@@ -98,7 +98,20 @@ uploadForm.addEventListener('submit', async (e) => {
 async function loadFiles() {
     try {
         const response = await fetch(apiUrl('/api/files'));
-        const files = await response.json();
+        const responseText = await response.text();
+        let files;
+        try {
+            files = responseText ? JSON.parse(responseText) : [];
+        } catch {
+            files = [];
+            throw new Error(responseText || response.statusText);
+        }
+
+        if (!response.ok) {
+            // When server returns a non-2xx, it should still be JSON, but handle text defensively.
+            const maybeError = files && files.error ? files.error : responseText;
+            throw new Error(maybeError || response.statusText);
+        }
         
         fileCount.textContent = `${files.length} files`;
         

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
 const uploadForm = document.getElementById('uploadForm');
 const fileInput = document.getElementById('fileInput');
 const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -10,9 +10,17 @@ const modalDescription = document.getElementById('modalDescription');
 const modalPasswordInput = document.getElementById('modalPasswordInput');
 const confirmActionBtn = document.getElementById('confirmActionBtn');
 
+// Fail fast in production if the HTML structure isn't present.
+if (!uploadForm || !fileInput || !fileNameDisplay) {
+    console.error('ShareitAF init failed: missing required DOM elements.');
+    return;
+}
+
 let currentFileId = null;
 let modalMode = 'download'; // 'download' or 'delete'
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+// Same-origin API calls by default.
+// (Avoids `import.meta.env` so this JS won't crash if loaded outside module context.)
+const API_BASE = '';
 
 function apiUrl(path) {
     return `${API_BASE}${path}`;
@@ -310,4 +318,11 @@ document.querySelectorAll('.toggle-password').forEach(button => {
 
 // Initial load
 loadFiles();
-});
+}
+
+// Make initialization robust across script-loading modes.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}

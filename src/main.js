@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', () => {
 const uploadForm = document.getElementById('uploadForm');
 const fileInput = document.getElementById('fileInput');
 const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -201,6 +202,12 @@ function closeModal() {
     modalMode = null;
 }
 
+// Inline `onclick="..."` handlers expect these functions to exist on `window`.
+// When using `<script type="module">`, plain function declarations are module-scoped.
+window.openDownloadModal = openDownloadModal;
+window.openDeleteModal = openDeleteModal;
+window.closeModal = closeModal;
+
 confirmActionBtn.addEventListener('click', async () => {
     const value = modalPasswordInput.value;
     if (!value) {
@@ -303,3 +310,4 @@ document.querySelectorAll('.toggle-password').forEach(button => {
 
 // Initial load
 loadFiles();
+});

@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import { connectDb } from '../_lib/db';
 import { FileModel } from '../_lib/file-model';
 
@@ -8,6 +7,10 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    // Load bcrypt lazily so native-module failures don't crash the whole lambda.
+    const bcryptMod: any = await import('bcrypt');
+    const bcrypt = bcryptMod.default || bcryptMod;
+
     await connectDb();
     const { id } = req.query;
     const { answer } = req.body || {};

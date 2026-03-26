@@ -11,6 +11,11 @@ const confirmActionBtn = document.getElementById('confirmActionBtn');
 
 let currentFileId = null;
 let modalMode = 'download'; // 'download' or 'delete'
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
+function apiUrl(path) {
+    return `${API_BASE}${path}`;
+}
 
 // File input change handler
 fileInput.addEventListener('change', (e) => {
@@ -49,7 +54,7 @@ uploadForm.addEventListener('submit', async (e) => {
         uploadBtn.disabled = true;
         uploadBtn.innerHTML = '<div class="loader"></div><span>Uploading...</span>';
         
-        const response = await fetch('/api/upload', {
+        const response = await fetch(apiUrl('/api/upload'), {
             method: 'POST',
             body: formData
         });
@@ -75,7 +80,7 @@ uploadForm.addEventListener('submit', async (e) => {
 // Load files
 async function loadFiles() {
     try {
-        const response = await fetch('/api/files');
+        const response = await fetch(apiUrl('/api/files'));
         const files = await response.json();
         
         fileCount.textContent = `${files.length} files`;
@@ -212,7 +217,7 @@ confirmActionBtn.addEventListener('click', async () => {
 
 async function handleDownload(password) {
     try {
-        const response = await fetch(`/api/download/${currentFileId}`, {
+        const response = await fetch(apiUrl(`/api/download/${currentFileId}`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password })
@@ -254,7 +259,7 @@ async function handleDownload(password) {
 
 async function handleDelete(answer) {
     try {
-        const response = await fetch(`/api/delete/${currentFileId}`, {
+        const response = await fetch(apiUrl(`/api/delete/${currentFileId}`), {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ answer })

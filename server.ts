@@ -9,12 +9,6 @@ import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
-
-// Ensure uploads directory exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
 
 // Database setup
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/shareitaf')
@@ -30,25 +24,18 @@ const fileSchema = new mongoose.Schema({
   file_size: { type: Number, required: true },
   upload_time: { type: Date, default: Date.now },
   one_time_open: { type: Boolean, default: false },
-  is_opened: { type: Boolean, default: false }
+  is_opened: { type: Boolean, default: false },
+  file_data: { type: Buffer, required: true }
 });
 
 const FileModel = mongoose.model('File', fileSchema);
 
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Multer configuration: Use memory storage to store file in MongoDB
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB (MongoDB limit is 16MB)
   fileFilter: (req, file, cb) => {
     const allowedTypes = /pdf|ppt|pptx|doc|docx|jpg|jpeg|png/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -73,20 +60,22 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const uniqueFilename = Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
 
     const newFile = new FileModel({
-      filename: file.filename,
+      filename: uniqueFilename,
       original_name: file.originalname,
       uploader_name: uploaderName,
       password_hash: passwordHash,
       file_type: file.mimetype,
       file_size: file.size,
-      one_time_open: req.body.oneTimeOpen === 'true'
+      one_time_open: req.body.oneTimeOpen === 'true',
+      file_data: file.buffer
     });
 
     await newFile.save();
 
-    res.json({ success: true, message: 'File uploaded successfully!' });
+    res.json({ success: true, message: 'File uploaded successfully to database!' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -136,8 +125,9 @@ app.post('/api/download/:id', async (req, res) => {
       await FileModel.findByIdAndUpdate(id, { is_opened: true });
     }
 
-    const filePath = path.join(UPLOADS_DIR, fileRecord.filename);
-    res.download(filePath, fileRecord.original_name);
+    res.setHeader('Content-Type', fileRecord.file_type);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileRecord.original_name}"`);
+    res.send(fileRecord.file_data);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -164,3 +154,4 @@ async function startServer() {
 }
 
 startServer();
+

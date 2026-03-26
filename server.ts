@@ -176,6 +176,23 @@ app.delete('/api/delete/:id', async (req, res) => {
   }
 });
 
+// Multer (and other middleware) errors can happen before the route handler runs,
+// and without this Express error handler the default response can be plain text/HTML.
+// Returning JSON here keeps the front-end error handling consistent.
+app.use((err: any, _req: any, res: any, next: any) => {
+  if (res.headersSent) return next(err);
+
+  if (err?.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File too large. Max size is 15MB.' });
+  }
+
+  if (err instanceof Error && err.message) {
+    return res.status(500).json({ error: err.message });
+  }
+
+  return res.status(500).json({ error: 'Upload failed' });
+});
+
 // Vite integration
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

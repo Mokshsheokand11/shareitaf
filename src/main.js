@@ -67,16 +67,24 @@ uploadForm.addEventListener('submit', async (e) => {
             method: 'POST',
             body: formData
         });
-
-        const result = await response.json();
+        
+        // Always read the response body as text first.
+        // Some server/multer failures return plain text (not JSON), which makes `response.json()` throw.
+        const responseText = await response.text();
+        let result;
+        try {
+            result = responseText ? JSON.parse(responseText) : {};
+        } catch {
+            result = { error: responseText || response.statusText };
+        }
 
         if (response.ok) {
-            alert('Success: ' + result.message);
+            alert('Success: ' + (result && result.message ? result.message : 'File uploaded successfully'));
             uploadForm.reset();
             fileNameDisplay.textContent = 'Click to upload or drag and drop';
             loadFiles();
         } else {
-            alert('Error: ' + result.error);
+            alert('Error: ' + (result && result.error ? result.error : (result && result.message ? result.message : responseText || response.statusText)));
         }
     } catch (error) {
         alert('Upload failed: ' + error.message);

@@ -26,23 +26,63 @@ function apiUrl(path) {
     return `${API_BASE}${path}`;
 }
 
+// Reusable file selection handler
+function handleFileSelection(file) {
+    if (!file) return;
+    
+    const allowedTypes = ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+    const extension = file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(extension)) {
+        alert('Only PDF, PPT, DOC, JPG, JPEG, and PNG files are allowed.');
+        fileInput.value = '';
+        fileNameDisplay.textContent = 'Click to upload or drag and drop';
+        return false;
+    }
+    
+    fileNameDisplay.textContent = file.name;
+    return true;
+}
+
 // File input change handler
 fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        const file = e.target.files[0];
-        const allowedTypes = ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-        const extension = file.name.split('.').pop().toLowerCase();
-        
-        if (!allowedTypes.includes(extension)) {
-            alert('Only PDF, PPT, DOC, JPG, JPEG, and PNG files are allowed.');
-            fileInput.value = '';
-            fileNameDisplay.textContent = 'Click to upload or drag and drop';
-            return;
-        }
-        
-        fileNameDisplay.textContent = file.name;
-    }
+    handleFileSelection(e.target.files[0]);
 });
+
+// Drag and drop handlers
+const uploadArea = document.querySelector('.upload-area');
+if (uploadArea) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.add('drag-over');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.remove('drag-over');
+        }, false);
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        
+        if (handleFileSelection(file)) {
+            // Update the hidden file input with the dropped file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+        }
+    }, false);
+}
 
 // Upload handler
 uploadForm.addEventListener('submit', async (e) => {
